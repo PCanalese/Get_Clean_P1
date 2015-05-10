@@ -1,2 +1,3 @@
-# Get_Clean_P1
-JH Data Science Stream - Coursera
+# Introduction
+The files in this repo have been created for John Hopkins Cousera SUbject
+Getting and Cleaning Data
