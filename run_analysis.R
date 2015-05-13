@@ -1,10 +1,10 @@
 # This Script has been created for Project 1 of the Getting and Cleaning Data
 # It does the following:
 #
- 
+#
 # 1. Merges the training and the test sets to create one data set
-#       Training set stored in  "./UCI HAR Dataset/train/X_train.txt"
-#       Test set stored in "./UCI HAR Dataset/test/X_test.txt"
+#       Training set stored in  "UCI HAR Dataset/train/x_train.txt"
+#       Test set stored in "UCI HAR Dataset/test/X_test.txt"
 # 2. Extracts only the measurements on the mean and standard deviation
 #       for each measurement. 
 # 3. Uses descriptive activity names to name the activities in the data set
@@ -12,55 +12,65 @@
 # 5. From the data set in step 4, creates a second, independent tidy data set
 #       with the average of each variable for each activity and each subject.
 
+# v0.1 - initial 12/05/2015
+# v0.2 - 13/05/2015
+#        made subject and activity ID joining cleaner, more verbose labels
+
 library(data.table)
+# ---------------------------------------------------
+# Steps for Requirement 1
+# ---------------------------------------------------
 
-## Steps for Requirement 1
-Train <- read.table("./UCI HAR Dataset/train/X_train.txt",
-                    header = FALSE)             # Read in the training set
+#Read in the training set
+Train <- read.table("UCI HAR Dataset/train/X_train.txt")
 
-Test <- read.table("./UCI HAR Dataset/test/X_test.txt",
-                   header = FALSE)              # Read in the test set
+# read in subject and activity data
+Train_Subject <- read.table("UCI HAR Dataset/train/subject_train.txt",
+                             col.names="Subject")
+Train_Activity <- read.table("UCI HAR Dataset/train/y_train.txt",
+                              col.names="Activity")
+
+Train <- cbind(Train_Activity,Train_Subject,Train) # join all the info
+
+# Read in the test set
+Test <- read.table("UCI HAR Dataset/test/X_test.txt")  
+
+# read in subject and activity data
+Test_Subject <- read.table("UCI HAR Dataset/test/subject_test.txt",
+                            col.names="Subject")
+Test_Activity <- read.table("UCI HAR Dataset/test/y_test.txt",
+                            col.names="Activity")
+
+Test <- cbind(Test_Activity,Test_Subject,Test)
 
 Raw_Data <- rbind (Train,Test)                  # Join them to one
 
+# ---------------------------------------------------
 # Steps for Requirement 2
-# For ease of latter manipulation to Raw_Data we want to add subject and 
-# activity ids as well as header labels - these items form part 
-# of Requirement 4
+# For ease of latter manipulation to Raw_Data add header labels to
+# these items form part of Requirement 4
+# ---------------------------------------------------
 
-Features <- read.table("./UCI HAR Dataset/features.txt",row.names=1)
-colnames(Raw_Data) <- as.vector(Features$V2)    # Read in features and 
-                                                # Attach as col names
-
-# add in subject and activity data
-Train_Subject <- read.table("./UCI HAR Dataset/train/subject_train.txt",
-                                      header = FALSE)
-Train_Activity <- read.table("./UCI HAR Dataset/train/y_train.txt",
-                             header = FALSE)
-
-Test_Subject <- read.table("./UCI HAR Dataset/test/subject_test.txt",
-                            header = FALSE)
-Test_Activity <- read.table("./UCI HAR Dataset/test/y_test.txt",
-                             header = FALSE)
-
-# Add the above information to the Raw_Data
-
-
-Raw_Data$Subject <- as.vector(c(Train_Subject$V1,Test_Subject$V1))
-Raw_Data$Activity <- as.vector(c(Train_Activity$V1,Test_Activity$V1))
+Features <- read.table("UCI HAR Dataset/features.txt")[,2] # Read in features
+Features <-  c("Activity","Subject",as.vector(Features)) # add initial cols 
+colnames(Raw_Data) <- Features    # Attach as col names to Raw_Data
+                                                
 
 # Extract the columns required i.e. ones that have mean and std in their 
 # name, also need to keep the activity and subject id
-keep_terms <- c('mean()','std()','Activity','Subject')
+keep_terms <- c('-mean()','-std()','Activity','Subject')
 pattern <- gsub(',\\s','|',toString(keep_terms))     # create string for grep
 colsToKeep <- grep(pattern,colnames(Raw_Data))  # set of columns to keep
 
 Tidy_Data_1 <- Raw_Data[,colsToKeep]  #Tidy Data set with mean and std columns
 
 
-## Steps for Requirement 3
+# ---------------------------------------------------
+# Steps for Requirement 3
+# ---------------------------------------------------
+
 # Get the activity names
-Activity_Names <- read.table("./UCI HAR Dataset/activity_labels.txt", 
+Activity_Names <- read.table("UCI HAR Dataset/activity_labels.txt", 
                              col.names = c("id","Name") ,header = FALSE)
 
 actID <- as.vector(as.character(Activity_Names$id)) #vector of activity ID
@@ -74,13 +84,29 @@ Tidy_Data_1$Activity_Name <- factor(Tidy_Data_1$Activity,
 Tidy_Data_1$Activity <- NULL     
 
 
+# ---------------------------------------------------
+# Step 4
+# ---------------------------------------------------
 
-## Step 4
 
-## Already done as part of Step 2
+# make some of the Col names more verbose and clear - maybe to the extreme....
+colnames_Tidy <- colnames(Tidy_Data_1)
+colnames_Tidy <- gsub ('tBody','Time Based Body ',colnames_Tidy)
+colnames_Tidy <- gsub ('fBodyBody','Frequency Based Body ',colnames_Tidy)
+colnames_Tidy <- gsub ('fBody','Frequency Based Body ',colnames_Tidy)
+colnames_Tidy <- gsub ('tGravity','Time Based Gravity ',colnames_Tidy)
+colnames_Tidy <- gsub ('Mag-',' Magnitude- ',colnames_Tidy)
+colnames_Tidy <- gsub ('Acc-','Acceleration ',colnames_Tidy)
+colnames_Tidy <- gsub ('-X','-X Axis',colnames_Tidy)
+colnames_Tidy <- gsub ('-Y','-Y Axis',colnames_Tidy)
+colnames_Tidy <- gsub ('-Z','-Y Axis',colnames_Tidy)
+colnames_Tidy <- gsub ('-std','-standard deviation',colnames_Tidy)
 
+colnames(Tidy_Data_1) <- colnames_Tidy
 
-## Step 5 
+# ---------------------------------------------------
+# Step 5 
+# ---------------------------------------------------
 
 Tmp_DT <- as.data.table(Tidy_Data_1) # convert Tidy Data set to temp data table
 
@@ -88,6 +114,6 @@ key_cols = c("Activity_Name","Subject")
 setkeyv(Tmp_DT,key_cols)       # set key for data table for quick processing
 
 #Calculate the means of the mean and standard Deviation 
-Tidy_Set_2 <- Tmp_DT[,lapply(.SD,mean), by = list(Activity_Name,Subject)]
-write.table(Tidy_Set_2,"Tidy_Set", row.names = FALSE)
+Tidy_Data_2 <- Tmp_DT[,lapply(.SD,mean), by = list(Activity_Name,Subject)]
+write.table(Tidy_Data_2,"Tidy_Set.txt", row.names = FALSE, sep="\t")
 
