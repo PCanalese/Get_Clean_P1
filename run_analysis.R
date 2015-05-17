@@ -3,6 +3,10 @@
 #
 #
 # 1. Merges the training and the test sets to create one data set
+#       It requires the UCI data to be extracted into working directory
+#       using the original folder & file structure.
+#       code check this and returns error if files are not present in
+#       the assumed locataion e.g.
 #       Training set stored in  "UCI HAR Dataset/train/x_train.txt"
 #       Test set stored in "UCI HAR Dataset/test/X_test.txt"
 # 2. Extracts only the measurements on the mean and standard deviation
@@ -15,8 +19,53 @@
 # v0.1 - initial 12/05/2015
 # v0.2 - 13/05/2015
 #        made subject and activity ID joining cleaner, more verbose labels
+# v1.0 - 18/05/2015
+#       memory clean up -delete tables no longer needed
+#       check data files are present
 
 library(data.table)
+# Check to see if the data files are stored in the directory
+
+data_files_set <- c("UCI HAR Dataset","UCI HAR Dataset/train",
+                    "UCI HAR Dataset/test",
+                    "UCI HAR Dataset/activity_labels.txt",
+                    "UCI HAR Dataset/features.txt",
+                    "UCI HAR Dataset/train/X_train.txt",
+                    "UCI HAR Dataset/train/subject_train.txt",
+                    "UCI HAR Dataset/train/y_train.txt",
+                    "UCI HAR Dataset/test/X_test.txt",
+                    "UCI HAR Dataset/test/subject_test.txt",
+                    "UCI HAR Dataset/test/y_test.txt")
+
+#initialise variables
+
+data_err <- FALSE
+data_missing <- NULL
+
+# check all the required directories and files are as expected
+for (i in seq_along(data_files_set)){
+        if (!file.exists(data_files_set[i])){
+                data_err <- TRUE
+                data_missing <- cbind(data_missing,i)
+        }
+        
+}
+
+# if one is missing give and error and identify which is missing
+if (data_err) {
+        print("The following required data file(s) are missing:")
+        for (i in seq_along(data_missing)){
+                print(data_files_set[data_missing[i]])
+        }
+        
+        # stop and prompt user to download the set
+        # auto download was considered but user maynot be online or have specific
+        # system requirements that mean auto download may not work
+        stop(c("Please download the required dataset:","\n",
+             "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip",
+             "\n","and extract into your working directory using the original folder structure."))
+}
+
 # ---------------------------------------------------
 # Steps for Requirement 1
 # ---------------------------------------------------
@@ -44,6 +93,14 @@ Test_Activity <- read.table("UCI HAR Dataset/test/y_test.txt",
 Test <- cbind(Test_Activity,Test_Subject,Test)
 
 Raw_Data <- rbind (Train,Test)                  # Join them to one
+
+# clean up memory
+rm(Test)
+rm(Test_Activity)
+rm(Test_Subject)
+rm(Train)
+rm(Train_Activity)
+rm(Train_Subject)
 
 # ---------------------------------------------------
 # Steps for Requirement 2
