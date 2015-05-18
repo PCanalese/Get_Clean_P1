@@ -6,7 +6,7 @@
 2. Variables
 3. Input Data
 4. Input actions and Data Transformations
-5. Tidy Data Output Set
+
 
 ## Set Up and Libraries
 
