@@ -1,6 +1,6 @@
-> CODEBOOK
+# CODEBOOK
 
-> Contents
+## Contents
 
 1. Set Up and Libraries
 2. Variables
@@ -8,7 +8,7 @@
 4. Input actions and Data Transformations
 5. Tidy Data Output Set
 
-> Set Up and Libraries
+## Set Up and Libraries
 
 The code has been developed using the following system and R libraries.  The code has been made as generic as possible, but has not been tested on any other platforms.
 
@@ -19,7 +19,7 @@ The code has been developed using the following system and R libraries.  The cod
 |R Studio|0.98.1103|
 |data.library|1.9.4|
 
-> Variables
+## Variables
 
 The following variables have been defined and are used in the transformation of the data into a tidy set.
 
@@ -49,7 +49,7 @@ The following variables have been defined and are used in the transformation of 
 |Tidy_Data_2|Data Table| Data Table for Final Tidy Data Set
 
 
-> Input Data
+## Input Data
 
 The imput data used is sourced from the following source.
 
@@ -132,7 +132,7 @@ This dataset is distributed AS-IS and no responsibility implied or explicit can 
 
 Jorge L. Reyes-Ortiz, Alessandro Ghio, Luca Oneto, Davide Anguita. November 2012.
 
-> 4. Input actions and Data Transformations
+## Input actions and Data Transformations
 
 The following steps and actions have been carried out to transform the input data and turn it in to the required Tidy Data Set.
 
